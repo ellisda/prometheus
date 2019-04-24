@@ -101,6 +101,7 @@ func lint(mf dto.MetricFamily) []Problem {
 		lintMetricUnits,
 		lintCounter,
 		lintHistogramSummaryReserved,
+		lintMetricTypeSuffix,
 	}
 
 	var problems []Problem
@@ -202,6 +203,23 @@ func lintHistogramSummaryReserved(mf dto.MetricFamily) []Problem {
 		}
 	}
 
+	return problems
+}
+
+// lintMetricTypeSuffix detects when the type of the metric is appended to the metric name
+func lintMetricTypeSuffix(mf dto.MetricFamily) []Problem {
+	t := mf.GetType()
+	if t == dto.MetricType_UNTYPED {
+		return nil
+	}
+
+	var problems problems
+	n := strings.ToLower(mf.GetName())
+
+	typename := strings.ToLower(dto.MetricType_name[int32(t)])
+	if strings.HasSuffix(n, "_"+typename) {
+		problems.Add(mf, fmt.Sprintf(`%s metrics should not have "_%s" suffix`, typename, typename))
+	}
 	return problems
 }
 
