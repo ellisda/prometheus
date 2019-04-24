@@ -447,7 +447,7 @@ go_gc_duration_seconds_count 5962
 	runTests(t, tests)
 }
 
-func TestLintMetricTypeSuffix(t *testing.T) {
+func TestLintMetricTypeInName(t *testing.T) {
 	genTest := func(n, t string, problems ...promlint.Problem) test {
 		return test{
 			name: fmt.Sprintf("%s with _%s suffix", t, t),
@@ -458,7 +458,7 @@ func TestLintMetricTypeSuffix(t *testing.T) {
 `, n, n, t, n),
 			problems: append(problems, promlint.Problem{
 				Metric: n,
-				Text:   fmt.Sprintf(`%s metrics should not have "_%s" suffix`, t, t),
+				Text:   fmt.Sprintf(`%s metrics should not include the type in metric name`, t),
 			}),
 		}
 	}
@@ -474,6 +474,8 @@ func TestLintMetricTypeSuffix(t *testing.T) {
 		genTest("request_duration_seconds_summary", "summary"),
 		genTest("request_duration_seconds_histogram", "histogram"),
 		genTest("request_duration_seconds_HISTOGRAM", "histogram"),
+
+		genTest("instance_memory_limit_gauge_bytes", "gauge"),
 	}
 	runTests(t, tests)
 }
