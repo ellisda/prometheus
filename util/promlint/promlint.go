@@ -17,6 +17,7 @@ package promlint
 import (
 	"fmt"
 	"io"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -103,6 +104,7 @@ func lint(mf dto.MetricFamily) []Problem {
 		lintHistogramSummaryReserved,
 		lintMetricTypeSuffix,
 		lintReservedChars,
+		lintCamelCase,
 	}
 
 	var problems []Problem
@@ -229,6 +231,16 @@ func lintReservedChars(mf dto.MetricFamily) []Problem {
 	var problems problems
 	if strings.Contains(mf.GetName(), ":") {
 		problems.Add(mf, "metric names should not contain ':'")
+	}
+	return problems
+}
+
+// lintCamelCase detects metric names written in camelCase
+func lintCamelCase(mf dto.MetricFamily) []Problem {
+	var problems problems
+	re := regexp.MustCompile(`[a-z][A-Z]`)
+	if re.FindString(mf.GetName()) != "" {
+		problems.Add(mf, "metric names should be written in 'snake_case' not 'camelCase'")
 	}
 	return problems
 }

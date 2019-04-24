@@ -498,6 +498,26 @@ request_duration::_seconds 10
 	runTests(t, tests)
 }
 
+func TestLintCamelCase(t *testing.T) {
+	tests := []test{
+		{
+			name: "requestDuration_seconds",
+			in: `
+# HELP requestDuration_seconds Test metric.
+# TYPE requestDuration_seconds histogram
+requestDuration_seconds 10
+`,
+			problems: []promlint.Problem{
+				{
+					Metric: "requestDuration_seconds",
+					Text:   "metric names should be written in 'snake_case' not 'camelCase'",
+				},
+			},
+		},
+	}
+	runTests(t, tests)
+}
+
 func runTests(t *testing.T, tests []test) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
