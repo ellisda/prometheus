@@ -478,6 +478,26 @@ func TestLintMetricTypeSuffix(t *testing.T) {
 	runTests(t, tests)
 }
 
+func TestLintReservedChars(t *testing.T) {
+	tests := []test{
+		{
+			name: "request_duration::_seconds",
+			in: `
+# HELP request_duration::_seconds Test metric.
+# TYPE request_duration::_seconds histogram
+request_duration::_seconds 10
+`,
+			problems: []promlint.Problem{
+				{
+					Metric: "request_duration::_seconds",
+					Text:   "metric names should not contain ':'",
+				},
+			},
+		},
+	}
+	runTests(t, tests)
+}
+
 func runTests(t *testing.T, tests []test) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

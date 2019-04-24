@@ -102,6 +102,7 @@ func lint(mf dto.MetricFamily) []Problem {
 		lintCounter,
 		lintHistogramSummaryReserved,
 		lintMetricTypeSuffix,
+		lintReservedChars,
 	}
 
 	var problems []Problem
@@ -219,6 +220,15 @@ func lintMetricTypeSuffix(mf dto.MetricFamily) []Problem {
 	typename := strings.ToLower(dto.MetricType_name[int32(t)])
 	if strings.HasSuffix(n, "_"+typename) {
 		problems.Add(mf, fmt.Sprintf(`%s metrics should not have "_%s" suffix`, typename, typename))
+	}
+	return problems
+}
+
+// lintReservedChars detects colons in metric names
+func lintReservedChars(mf dto.MetricFamily) []Problem {
+	var problems problems
+	if strings.Contains(mf.GetName(), ":") {
+		problems.Add(mf, "metric names should not contain ':'")
 	}
 	return problems
 }
