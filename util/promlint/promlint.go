@@ -105,6 +105,7 @@ func lint(mf dto.MetricFamily) []Problem {
 		lintMetricTypeSuffix,
 		lintReservedChars,
 		lintCamelCase,
+		lintUnitAbbreviations,
 	}
 
 	var problems []Problem
@@ -245,6 +246,18 @@ func lintCamelCase(mf dto.MetricFamily) []Problem {
 	return problems
 }
 
+// lintUnitAbbreviations detects abbreviated units in the metric name
+func lintUnitAbbreviations(mf dto.MetricFamily) []Problem {
+	var problems problems
+	n := strings.ToLower(mf.GetName())
+	for _, s := range unitAbbreviations {
+		if strings.Contains(n, "_"+s+"_") || strings.HasSuffix(n, "_"+s) {
+			problems.Add(mf, "metric names should not used abbreviated units")
+		}
+	}
+	return problems
+}
+
 // metricUnits attempts to detect known unit types used as part of a metric name,
 // e.g. "foo_bytes_total" or "bar_baz_milligrams".
 func metricUnits(m string) (unit string, base string, ok bool) {
@@ -304,5 +317,17 @@ var (
 		"tebi",
 		"peta",
 		"pebi",
+	}
+
+	//common abbreviations that we'd like to discourage
+	unitAbbreviations = []string{
+		"s",
+		"sec",
+		"b",
+		"kb",
+		"mb",
+		"gb",
+		"tb",
+		"pb",
 	}
 )

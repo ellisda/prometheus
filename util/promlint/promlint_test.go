@@ -518,6 +518,39 @@ requestDuration_seconds 10
 	runTests(t, tests)
 }
 
+func TestLintUnitAbbreviations(t *testing.T) {
+	genTest := func(n string) test {
+		return test{
+			name: fmt.Sprintf("%s with abbreviated unit", n),
+			in: fmt.Sprintf(`
+# HELP %s Test metric.
+# TYPE %s gauge
+%s 10
+`, n, n, n),
+			problems: []promlint.Problem{
+				promlint.Problem{
+					Metric: n,
+					Text:   "metric names should not used abbreviated units",
+				},
+			},
+		}
+	}
+	tests := []test{
+		genTest("instance_memory_limit_b"),
+		genTest("instance_memory_limit_kb"),
+		genTest("instance_memory_limit_mb"),
+		genTest("instance_memory_limit_MB"),
+		genTest("instance_memory_limit_gb"),
+		genTest("instance_memory_limit_tb"),
+		genTest("instance_memory_limit_pb"),
+
+		genTest("request_duration_s"),
+		genTest("request_duration_sec"),
+		genTest("request_duration_sec_summary"),
+	}
+	runTests(t, tests)
+}
+
 func runTests(t *testing.T, tests []test) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
